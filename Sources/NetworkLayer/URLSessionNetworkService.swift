@@ -16,17 +16,13 @@ public class URLSessionNetworkService: NetworkService {
     }
     
     public func request<T: Decodable>(endpoint: Endpoint, responseModel: T.Type) async throws -> T {
-        guard let url = URL(string: endpoint.path) else {
+        guard let url = URL(string: endpoint.baseURL + endpoint.path) else {
             throw URLError(.badURL)
         }
         
         var request = URLRequest(url: url)
-        request.httpMethod = endpoint.method
+        request.httpMethod = endpoint.method.rawValue
         request.allHTTPHeaderFields = endpoint.headers
-        
-        if let body = endpoint.body {
-            request.httpBody = body
-        }
         
         let (data, response) = try await session.data(for: request)
         

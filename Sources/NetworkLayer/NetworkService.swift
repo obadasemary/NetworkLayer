@@ -10,4 +10,3 @@ import Foundation
 public protocol NetworkService {
     func request<T: Decodable>(endpoint: Endpoint, responseModel: T.Type) async throws -> T
 }
-
