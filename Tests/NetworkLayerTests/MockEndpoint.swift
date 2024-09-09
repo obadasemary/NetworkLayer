@@ -13,5 +13,5 @@ struct MockEndpoint: Endpoint {
     var method: String = "GET"
     var headers: [String: String]? = nil
     var parameters: [String: Any]? = nil
-    var body: Data? = nil
+    var contentType: String = ""
 }
