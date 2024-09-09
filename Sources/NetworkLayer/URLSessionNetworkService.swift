@@ -7,17 +7,27 @@
 
 import Foundation
 
-public class URLSessionNetworkService: NetworkService {
+public enum NetworkError: Error {
+    case invalidURL
+    case invalidResponse
+    case decodingError
+    case serverError(statusCode: Int)
+}
+
+public class URLSessionNetworkService {
     
     private let session: URLSession
     
     public init(session: URLSession = .shared) {
         self.session = session
     }
+}
+
+extension URLSessionNetworkService: NetworkService {
     
     public func request<T: Decodable>(endpoint: Endpoint, responseModel: T.Type) async throws -> T {
         guard let url = URL(string: endpoint.baseURL + endpoint.path) else {
-            throw URLError(.badURL)
+            throw NetworkError.invalidURL
         }
         
         var request = URLRequest(url: url)
@@ -26,12 +36,20 @@ public class URLSessionNetworkService: NetworkService {
         
         let (data, response) = try await session.data(for: request)
         
-        guard let httpResponse = response as? HTTPURLResponse, 200..<300 ~= httpResponse.statusCode else {
-            throw URLError(.badServerResponse)
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw NetworkError.invalidResponse
         }
         
-        let decodedResponse = try JSONDecoder().decode(T.self, from: data)
-        return decodedResponse
+        guard 200..<300 ~= httpResponse.statusCode else {
+            throw NetworkError.serverError(statusCode: httpResponse.statusCode)
+        }
+        
+        do {
+            let decodedResponse = try JSONDecoder().decode(T.self, from: data)
+            return decodedResponse
+        } catch {
+            throw NetworkError.decodingError
+        }
     }
 }
 
