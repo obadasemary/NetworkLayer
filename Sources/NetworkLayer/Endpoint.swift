@@ -30,7 +30,7 @@ public extension Endpoint {
     var baseURL: String { "" }
     var method: HTTPMethod { .get }
     var headers: HTTPHeaders { ["Content-Type": contentType] }
-    var params: [String: Any]? { nil }
+    var parameters: [String: Any]? { nil }
     var contentType: String { "application/json" }
 }
 
