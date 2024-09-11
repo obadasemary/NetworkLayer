@@ -47,7 +47,26 @@ extension URLSessionNetworkService: NetworkService {
         do {
             let decodedResponse = try JSONDecoder().decode(T.self, from: data)
             return decodedResponse
+        } catch let decodingError as DecodingError {
+            switch decodingError {
+            case .keyNotFound(let key, let context):
+                print("Key '\(key)' not found:", context.debugDescription)
+                print("codingPath:", context.codingPath)
+            case .typeMismatch(let type, let context):
+                print("Type '\(type)' mismatch:", context.debugDescription)
+                print("codingPath:", context.codingPath)
+            case .valueNotFound(let value, let context):
+                print("Value '\(value)' not found:", context.debugDescription)
+                print("codingPath:", context.codingPath)
+            case .dataCorrupted(let context):
+                print("Data corrupted:", context.debugDescription)
+                print("codingPath:", context.codingPath)
+            @unknown default:
+                print("Unknown decoding error")
+            }
+            throw NetworkError.decodingError
         } catch {
+            print("Other error: \(error.localizedDescription)")
             throw NetworkError.decodingError
         }
     }
